@@ -1,0 +1,45 @@
+version: '3.2'
+
+services:
+  rabbitmqServer:
+    container_name: rabbitmqServer
+    image: rabbitmq:3-management-alpine
+    hostname: "rabbitmq-host"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "admin"
+      RABBITMQ_DEFAULT_PASS: "pass"
+    networks:
+      - rabbitnetwork
+
+
+  producer:
+    build:
+      context: ./producer
+    container_name: producer
+    depends_on:
+      - rabbitmqServer
+    ports:
+      - "8000:8000"
+    networks:
+      - rabbitnetwork
+    restart: always
+
+  consumer:
+    container_name: consumer
+    build:
+      context: ./consumer
+    restart: always
+    depends_on:
+      - rabbitmqServer
+      - producer
+    ports:
+      - "8001:8001"
+    networks:
+      - rabbitnetwork
+
+networks:
+  rabbitnetwork:
+    driver: bridge
